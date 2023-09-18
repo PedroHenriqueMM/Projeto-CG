@@ -1,13 +1,11 @@
 import pygame
 import time
-
-
 def game_loop():
     pygame.init()
 
     width, height = 1280, 720
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('Meu Jogo Suave')
+    pygame.display.set_caption('CS2D')
 
     player_sprite = pygame.image.load('images/player_sprite.jpg')
     enemy_sprite = pygame.image.load('images/enemy_sprite.jpg')
@@ -49,7 +47,6 @@ def game_loop():
                     bullets.append({"x": player_pos[0], "y": player_pos[1],
                                     "rect": pygame.Rect(player_pos[0], player_pos[1], tile_size // 4, tile_size // 4)})
 
-        # Note that the code below is now indented to be part of the while loop
         if keys[pygame.K_LEFT]:
             move_x = -move_speed
         if keys[pygame.K_RIGHT]:
