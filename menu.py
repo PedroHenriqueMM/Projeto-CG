@@ -56,7 +56,7 @@ def main_menu():
     pygame.mixer.music.load('music/musica_fundo_menu.mp3')
     pygame.mixer.music.play(-1)
 
-    width, height = 1280, 720
+    width, height = 1600, 900
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption('Menu do CS2D')
 

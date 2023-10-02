@@ -1,128 +1,97 @@
 import pygame
+import math
 import time
+from map import GameMap
+
+class Player:
+    def __init__(self, pos):
+        self.original_image = pygame.image.load('images/player_sprite.png')
+        self.original_image = pygame.transform.scale(self.original_image, (129, 110))
+        self.image = self.original_image.copy()
+        self.rect = self.image.get_rect(center=pos)
+        self.pos = pygame.math.Vector2(pos)
+        self.speed = 5
+
+    def update(self):
+        self.rotate()
+        self.move()
+
+    def rotate(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        angle = math.atan2(mouse_y - self.pos.y, mouse_x - self.pos.x)
+        angle = math.degrees(angle)
+        self.image = pygame.transform.rotate(self.original_image, -angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+        dx, dy = 0, 0
+        if keys[pygame.K_a]:
+            dx = -self.speed
+        if keys[pygame.K_d]:
+            dx = self.speed
+        if keys[pygame.K_w]:
+            dy = -self.speed
+        if keys[pygame.K_s]:
+            dy = self.speed
+        self.pos.x += dx
+        self.pos.y += dy
+        self.rect.center = self.pos
+
+class Bullet:
+    def __init__(self, pos, angle):
+        self.image = pygame.image.load('images/bullet_sprite.png')
+        self.rect = self.image.get_rect(center=pos)
+        self.pos = pygame.math.Vector2(pos)
+        self.speed = 15
+        self.angle = angle
+        self.dx = self.speed * math.cos(math.radians(angle))
+        self.dy = self.speed * math.sin(math.radians(angle))
+
+    def update(self):
+        self.pos.x += self.dx
+        self.pos.y += self.dy
+        self.rect.center = self.pos
+
+
 def game_loop():
     pygame.init()
 
-    width, height = 1280, 720
+    width, height = 1600, 900
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption('CS2D')
 
-    player_sprite = pygame.image.load('images/player_sprite.jpg')
-    enemy_sprite = pygame.image.load('images/enemy_sprite.jpg')
-    grass_sprite = pygame.image.load('images/grass.jpeg')
-    stone_sprite = pygame.image.load('images/stone.jpeg')
-    bullet_sprite = pygame.image.load('images/bullet_sprite.jpg')
-
-    game_map = [
-        [1, 1, 1, 1, 1, 2, 2, 1],
-        [1, 0, 0, 2, 0, 0, 2, 1],
-        [1, 0, 3, 2, 3, 0, 0, 1],
-        [1, 2, 0, 0, 0, 2, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1]
-    ]
-
-    tile_size = min(width // len(game_map[0]), height // len(game_map))
-    player_pos = [3 * tile_size, 3 * tile_size]
+    player = Player((width // 2, height // 2))
     bullets = []
 
-    move_speed = 5
+    game_map = GameMap('images/mapa.png', (width, height))
 
-    player_sprite = pygame.transform.scale(player_sprite, (tile_size // 2, tile_size // 2))
-    enemy_sprite = pygame.transform.scale(enemy_sprite, (tile_size // 2, tile_size // 2))
-    bullet_sprite = pygame.transform.scale(bullet_sprite, (tile_size // 4, tile_size // 4))
-    grass_sprite = pygame.transform.scale(grass_sprite, (tile_size, tile_size))
-    stone_sprite = pygame.transform.scale(stone_sprite, (tile_size, tile_size))
-
-    running = True
-    while running:
-        keys = pygame.key.get_pressed()
-        move_x, move_y = 0, 0
-        enemy_rect = pygame.Rect(0, 0, 0, 0)
-
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                return
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    bullets.append({"x": player_pos[0], "y": player_pos[1],
-                                    "rect": pygame.Rect(player_pos[0], player_pos[1], tile_size // 4, tile_size // 4)})
+                    angle = math.degrees(
+                        math.atan2(pygame.mouse.get_pos()[1] - player.pos.y, pygame.mouse.get_pos()[0] - player.pos.x))
+                    bullet = Bullet(player.pos, angle)
+                    bullets.append(bullet)
 
-        if keys[pygame.K_LEFT]:
-            move_x = -move_speed
-        if keys[pygame.K_RIGHT]:
-            move_x = move_speed
-        if keys[pygame.K_UP]:
-            move_y = -move_speed
-        if keys[pygame.K_DOWN]:
-            move_y = move_speed
-
-        new_x = player_pos[0] + move_x
-        new_y = player_pos[1] + move_y
-        new_rect = pygame.Rect(new_x, new_y, tile_size // 2, tile_size // 2)
-
-        collision = False
-        for i in range(len(game_map)):
-            for j in range(len(game_map[i])):
-                tile_type = game_map[i][j]
-                tile_rect = pygame.Rect(j * tile_size, i * tile_size, tile_size, tile_size)
-
-                if tile_type == 3:
-                    enemy_rect = pygame.Rect(j * tile_size + tile_size // 4, i * tile_size + tile_size // 4,
-                                             tile_size // 2, tile_size // 2)
-
-                if tile_type == 2:
-                    if new_rect.colliderect(tile_rect):
-                        collision = True
-
-                if tile_type == 3:
-                    if new_rect.colliderect(enemy_rect):
-                        collision = True
-
-                for bullet in bullets:
-                    bullet_rect = pygame.Rect(bullet['x'] + tile_size // 4, bullet['y'] + tile_size // 4,
-                                              tile_size // 4, tile_size // 4)
-                    if bullet_rect.colliderect(enemy_rect):
-                        bullets.remove(bullet)
-                        game_map[i][j] = 0
-
-            if collision:
-                break
-
-        if not collision:
-            player_pos[0] = new_x
-            player_pos[1] = new_y
-
-        for bullet in bullets:
-            bullet['y'] -= 5
-            bullet['rect'].y = bullet['y']
-
-        for i in range(len(game_map)):
-            for j in range(len(game_map[i])):
-                if game_map[i][j] == 3:
-                    enemy_rect = pygame.Rect(j * tile_size, i * tile_size, tile_size, tile_size)
-                    for bullet in bullets:
-                        if bullet['rect'].colliderect(enemy_rect):
-                            game_map[i][j] = 0
-                            bullets.remove(bullet)
-
+        player.update()
         screen.fill((0, 0, 0))
-        for i in range(len(game_map)):
-            for j in range(len(game_map[i])):
-                if game_map[i][j] == 1:
-                    screen.blit(grass_sprite, (j * tile_size, i * tile_size))
-                elif game_map[i][j] == 2:
-                    screen.blit(stone_sprite, (j * tile_size, i * tile_size))
-                elif game_map[i][j] == 3:
-                    screen.blit(enemy_sprite, (j * tile_size, i * tile_size))
+
+        # Desenha o mapa
+        game_map.draw(screen)
 
         for bullet in bullets:
-            screen.blit(bullet_sprite, (bullet['x'], bullet['y']))
+            bullet.update()
+            screen.blit(bullet.image, bullet.rect.topleft)
 
-        screen.blit(player_sprite, (player_pos[0], player_pos[1]))
+        screen.blit(player.image, player.rect.topleft)
 
         pygame.display.flip()
         time.sleep(1 / 60.0)
 
-# Para testar a função game_loop
+
 if __name__ == "__main__":
     game_loop()
