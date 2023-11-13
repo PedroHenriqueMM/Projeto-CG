@@ -1,13 +1,11 @@
 import pygame
 import sys
-from Game import game_loop  # Certifique-se de que Game.py está na mesma pasta e contém a função game_loop
+from Game import game_loop
 
 
 def quit_game():
     pygame.quit()
     sys.exit()
-
-
 def draw_button(screen, msg, x, y, w, h, ic, ac, action=None):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -60,7 +58,7 @@ def main_menu():
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption('Menu do CS2D')
 
-    bg = pygame.image.load('images/fundo_menu.jpg')
+    bg = pygame.image.load('assets/images/fundo_menu.jpg')
     bg = pygame.transform.scale(bg, (width, height))
 
     clock = pygame.time.Clock()

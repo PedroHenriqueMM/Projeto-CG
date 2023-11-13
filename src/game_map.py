@@ -1,6 +1,5 @@
 import pygame
 
-
 class GameMap:
     def __init__(self, path, screen_dimensions):
         self.map_image = pygame.image.load(path)
