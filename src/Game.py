@@ -18,7 +18,6 @@ def game_loop():
     bullets = []
 
     game_map = GameMap('assets/images/mapa.png', (width, height))
-
     hud = HUD()
 
     while True:
@@ -39,6 +38,9 @@ def game_loop():
         # Desenha o mapa
         game_map.draw(screen)
 
+        # Desenha o HUD
+        hud.draw(screen, player.health, 100, player.ammo, player.money)
+
         # Atualiza e desenha as balas
         for bullet in bullets[:]:
             if bullet.update(width, height):
@@ -48,9 +50,6 @@ def game_loop():
 
         # Desenha o jogador
         screen.blit(player.image, player.rect.topleft)
-
-        # Desenha o HUD
-        hud.draw(screen, player.health, player.ammo, player.money)
 
         pygame.display.flip()
         clock.tick(60)
