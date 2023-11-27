@@ -12,10 +12,12 @@ class Player:
         self.health = 100
         self.ammo = [30, 90]  # Representa balas no carregador e balas totais, respectivamente.
         self.money = 0
+        self.hitbox = pygame.Rect(self.pos.x - 30, self.pos.y - 20, 70, 60)  # Ajuste o tamanho conforme necessário
 
     def update(self):
         self.rotate()
         self.move()
+        self.update_hitbox()
 
     def rotate(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -38,3 +40,6 @@ class Player:
         self.pos.x += dx
         self.pos.y += dy
         self.rect.center = self.pos
+
+    def update_hitbox(self):
+        self.hitbox = pygame.Rect(self.pos.x - 30, self.pos.y - 20, 70, 60)

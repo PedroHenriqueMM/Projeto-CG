@@ -5,7 +5,14 @@ from src.player import Player
 from src.bullet import Bullet
 from src.hud import HUD
 from game_map import GameMap
+import pytmx
 
+def check_collision(player_rect, tiles):
+    for tile in tiles:
+        print(player_rect.colliderect(tile))
+        if player_rect.colliderect(tile):
+            return True
+    return False
 def game_loop():
     clock = pygame.time.Clock()
     pygame.init()
@@ -17,7 +24,12 @@ def game_loop():
     player = Player((width // 2, height // 2))
     bullets = []
 
+<<<<<<< HEAD
+    game_map = GameMap('../map/game_map.tmx', (width, height))
+=======
     game_map = GameMap('assets/images/mapa.png', (width, height))
+
+>>>>>>> parent of 2b873b6 (hud melhorado)
     hud = HUD()
 
     while True:
@@ -35,11 +47,24 @@ def game_loop():
         player.update()
         screen.fill((0, 0, 0))
 
+        all_layers = game_map.get_all_layers()
+
+        for layer in all_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                tiles = [
+                    pygame.Rect(x * game_map.map_tmx.tilewidth, y * game_map.map_tmx.tileheight, game_map.map_tmx.tilewidth, game_map.map_tmx.tileheight)
+                    for x, y, _ in layer.iter_data()]
+                if check_collision(player.hitbox, tiles):
+                    print("Colisão com o mapa!")
+                else:
+                    print("Não está colidindo!")
+
+                for tile in tiles:
+                    pygame.draw.rect(screen, (255, 0, 0), tile,
+                                     2)  # Desenha um retângulo vermelho ao redor do hitbox do mapa
+
         # Desenha o mapa
         game_map.draw(screen)
-
-        # Desenha o HUD
-        hud.draw(screen, player.health, 100, player.ammo, player.money)
 
         # Atualiza e desenha as balas
         for bullet in bullets[:]:
@@ -50,6 +75,10 @@ def game_loop():
 
         # Desenha o jogador
         screen.blit(player.image, player.rect.topleft)
+        pygame.draw.rect(screen, (255, 0, 0), player.hitbox, 2)
+
+        # Desenha o HUD
+        hud.draw(screen, player.health, player.ammo, player.money)
 
         pygame.display.flip()
         clock.tick(60)
